@@ -55,7 +55,7 @@ namespace Tailspin_SpaceGame_Tests1
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(20);
 
                 // Navigate to the site.
-                string url = "https://localhost:62153";
+                string url = "https://localhost:51802";
                 driver.Navigate().GoToUrl(url + "/");
 
                 // Wait for the page to be completely loaded.
