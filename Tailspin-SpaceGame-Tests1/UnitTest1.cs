@@ -1,70 +1,66 @@
-using Microsoft.Edge.SeleniumTools;
-using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections;
+using WebDriverManager.DriverConfigs.Impl;
+using WebDriverManager;
 
-namespace UITests
+
+namespace Tailspin_SpaceGame_Tests1
 {
+    /// <summary>
+    /// Set up the tests to run on different browsers.
+    /// </summary>
     [TestFixture("Chrome")]
     [TestFixture("Firefox")]
     [TestFixture("Edge")]
-    public class HomePageTest
+    public class Tests
     {
-        private string browser;
+        private string? browser;
         private IWebDriver driver;
 
-        public HomePageTest(string browser)
+        public Tests(string? browser)
         {
+            // Constructor with required parameters
             this.browser = browser;
         }
 
         [OneTimeSetUp]
         public void Setup()
         {
+            
             try
             {
                 // Create the driver for the current browser.
-                switch(browser)
+                switch (browser)
                 {
-                  case "Chrome":
-                    driver = new ChromeDriver(
-                        Environment.GetEnvironmentVariable("ChromeWebDriver")
-                    );
-                    break;
-                  case "Firefox":
-                    driver = new FirefoxDriver(
-                        Environment.GetEnvironmentVariable("GeckoWebDriver")
-                    );
-                    break;
-                  case "Edge":
-                    driver = new EdgeDriver(
-                        Environment.GetEnvironmentVariable("EdgeWebDriver"),
-                        new EdgeOptions
-                        {
-                            UseChromium = true
-                        }
-                    );
-                    break;
-                  default:
-                    throw new ArgumentException($"'{browser}': Unknown browser");
+                    case "Chrome":
+                        new DriverManager().SetUpDriver(new ChromeConfig());
+                        driver = new ChromeDriver();
+                        break;
+                    case "Firefox":
+                        new DriverManager().SetUpDriver(new FirefoxConfig());
+                        driver = new FirefoxDriver();
+                        break;
+                    case "Edge":
+                        new DriverManager().SetUpDriver(new EdgeConfig());
+                        driver = new EdgeDriver();
+                        break;
+                    default:
+                        throw new ArgumentException($"'{browser}': Unknown browser");
                 }
 
                 // Wait until the page is fully loaded on every page navigation or page reload.
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(20);
 
                 // Navigate to the site.
-                // The site name is stored in the SITE_URL environment variable to make 
-                // the tests more flexible.
-                string url = Environment.GetEnvironmentVariable("SITE_URL");
+                string url = "https://localhost:62153";
                 driver.Navigate().GoToUrl(url + "/");
 
                 // Wait for the page to be completely loaded.
                 new WebDriverWait(driver, TimeSpan.FromSeconds(10))
-                    .Until(d => ((IJavaScriptExecutor) d)
+                    .Until(d => ((IJavaScriptExecutor)d)
                         .ExecuteScript("return document.readyState")
                         .Equals("complete"));
             }
@@ -78,7 +74,7 @@ namespace UITests
                 Cleanup();
             }
         }
-    
+
         [OneTimeTearDown]
         public void Cleanup()
         {
@@ -87,7 +83,12 @@ namespace UITests
                 driver.Quit();
             }
         }
-
+        /// <summary>
+        /// These are the Div IDs for the links and modals on the home page. The first paramater is what should be clicked, the second is what should pop up when clicked.
+        /// </summary>
+        /// <param name="linkId"></param>
+        /// <param name="modalId"></param>
+        /// 
         // Download game
         [TestCase("download-btn", "pretend-modal")]
         // Screen image
@@ -97,9 +98,10 @@ namespace UITests
         public void ClickLinkById_ShouldDisplayModalById(string linkId, string modalId)
         {
             // Skip the test if the driver could not be loaded.
-            // This happens when the underlying browser is not installed.
+            // This happens when the underlying browser is not installed
             if (driver == null)
             {
+                Console.WriteLine($"Skipping test for {browser} because the driver could not be loaded.");
                 Assert.Ignore();
                 return;
             }
@@ -118,7 +120,7 @@ namespace UITests
             {
                 // Click the close button that's part of the modal.
                 ClickElement(FindElement(By.ClassName("close"), modal));
-                
+
                 // Wait for the modal to close and for the main page to again be clickable.
                 FindElement(By.TagName("body"));
             }
@@ -159,5 +161,6 @@ namespace UITests
             // Through JavaScript, run the click() method on the underlying HTML object.
             js.ExecuteScript("arguments[0].click();", element);
         }
+        
     }
 }
