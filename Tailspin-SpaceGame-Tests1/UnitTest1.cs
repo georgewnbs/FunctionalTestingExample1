@@ -5,6 +5,8 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager;
+using System.Diagnostics;
+using System.Reflection;
 
 
 namespace Tailspin_SpaceGame_Tests1
@@ -19,6 +21,7 @@ namespace Tailspin_SpaceGame_Tests1
     {
         private string? browser;
         private IWebDriver driver;
+        private Process webServerProcess;
 
         public Tests(string? browser)
         {
@@ -28,16 +31,17 @@ namespace Tailspin_SpaceGame_Tests1
 
         [OneTimeSetUp]
         public void Setup()
-        {
-            
+        {          
             try
             {
+
                 // Create the driver for the current browser.
                 switch (browser)
                 {
                     case "Chrome":
                         new DriverManager().SetUpDriver(new ChromeConfig());
                         driver = new ChromeDriver();
+                        
                         break;
                     case "Firefox":
                         new DriverManager().SetUpDriver(new FirefoxConfig());
